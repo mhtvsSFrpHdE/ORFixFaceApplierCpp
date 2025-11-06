@@ -66,7 +66,7 @@ void PatchPre6_1(std::vector<wxString>& lines, size_t faceConfigGroupBeginLineNu
             auto newLineWithIndent = line.substr(0, textBeginIndex);
             newLineWithIndent = newLineWithIndent + "Resource\\GIMI\\Diffuse = ref " + diffuseMapName;
             lines[i] = newLineWithIndent;
-            std::cout << "Line " << i + 1 << " changed to: " << line << std::endl;
+            std::cout << "Line " << i + 1 << " changed to: " << newLineWithIndent << std::endl;
         }
 
         // Light map
@@ -78,7 +78,7 @@ void PatchPre6_1(std::vector<wxString>& lines, size_t faceConfigGroupBeginLineNu
             auto newLineWithIndent = line.substr(0, textBeginIndex);
             newLineWithIndent = newLineWithIndent + "Resource\\GIMI\\LightMap = ref " + lightMapName;
             lines[i] = newLineWithIndent;
-            std::cout << "Line " << i + 1 << " changed to: " << line << std::endl;
+            std::cout << "Line " << i + 1 << " changed to: " << newLineWithIndent << std::endl;
         }
 
         bool endFaceConfigGroup = lowerLine.StartsWith("[");
@@ -113,6 +113,21 @@ void PatchPre6_1(std::vector<wxString>& lines, size_t faceConfigGroupBeginLineNu
     }
 }
 
+bool IsFaceConfigGroup(wxString lowerLine) {
+    // [TextureOverrideMizukiFaceHeadDiffuse]
+    // Standard syntax
+    bool result = lowerLine.StartsWith("[textureoverride") && lowerLine.EndsWith("faceheaddiffuse]");
+    // [CommandListRaidenShogunFaceHeadDiffuse]
+    // Some weebovz mods use this config group
+    result = result || (lowerLine.StartsWith("[commandlist") && lowerLine.EndsWith("faceheaddiffuse]"));
+
+    if (lowerLine.StartsWith("[commandlist") && lowerLine.EndsWith("faceheaddiffuse]")) {
+        __debugbreak;
+    }
+
+    return result;
+}
+
 void UndoOutdatedNews102425ToPre6_1(std::vector<wxString>& lines, size_t faceConfigGroupBeginLineNumber) {
     std::cout << "Ini file version seems is OutdatedNews102425, processing" << std::endl;
 
@@ -134,7 +149,7 @@ void UndoOutdatedNews102425ToPre6_1(std::vector<wxString>& lines, size_t faceCon
             }
         }
         else {
-            isFaceConfigGroup = lowerLine.StartsWith("[textureoverride") && lowerLine.EndsWith("faceheaddiffuse]");
+            isFaceConfigGroup = IsFaceConfigGroup(lowerLine);
         }
     }
 
@@ -179,11 +194,7 @@ ReturnValue<> Patch::PatchORFix_6_1(wxString iniFileName) {
             if (iniFaceVersion == IniFaceVersion::Unknown) {
                 std::cout << "Your ini status is unknown, please fix it manually" << std::endl
                     << "or maybe it doesn't need to be fixed" << std::endl
-                    << "Face fix tutorial: https://github.com/mhtvsSFrpHdE/ORFixFaceApplierCpp/wiki/How-to-fix-faces" << std::endl
-                    << "Press Enter to continue process other ini file";
-                std::string ignore;
-                std::getline(std::cin, ignore);
-                return result;
+                    << "Face fix tutorial: https://github.com/mhtvsSFrpHdE/ORFixFaceApplierCpp/wiki/How-to-fix-faces" << std::endl;
             }
 
             bool endFaceConfigGroup = lowerLine.StartsWith("[");
@@ -192,9 +203,11 @@ ReturnValue<> Patch::PatchORFix_6_1(wxString iniFileName) {
             }
         }
         else {
-            isFaceConfigGroup = lowerLine.StartsWith("[textureoverride") && lowerLine.EndsWith("faceheaddiffuse]");
-            groupIsPatched = false;
-            if (isFaceConfigGroup) { std::cout << line << std::endl; }
+            isFaceConfigGroup = IsFaceConfigGroup(lowerLine);
+            if (isFaceConfigGroup) {
+                groupIsPatched = false;
+                std::cout << line << std::endl;
+            }
         }
     }
 
