@@ -17,4 +17,8 @@ int main()
         Patch::MakeBackup(iniFile);
         Patch::PatchORFix_6_1(iniFile);
     }
+
+    std::cout << "Done, press enter to exit" << std::endl;
+    std::string ignore;
+    std::getline(std::cin, ignore);
 }
