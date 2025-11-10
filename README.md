@@ -17,3 +17,6 @@ within a few lines of sentences, good luck
 
 ## Usage
 Same as ORFix applier
+
+## How to fix face manually
+https://github.com/mhtvsSFrpHdE/ORFixFaceApplierCpp/wiki/How-to-fix-faces
